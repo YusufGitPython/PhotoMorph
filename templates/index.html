@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PhotoMorph</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        #preview {
+            max-width: 300px;
+            margin-top: 10px;
+            display: none;
+            border-radius: 10px;
+            border: 2px solid #ccc;
+        }
+
+        /* ===== LOADING OVERLAY ===== */
+        #loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.65);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            font-size: 18px;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #ccc;
+            border-top: 6px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #progressContainer {
+            width: 260px;
+            height: 10px;
+            background: #444;
+            border-radius: 20px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        #progressBar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00c6ff, #0072ff);
+            transition: width 0.2s ease;
+        }
+
+        #percent {
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        #eta {
+            margin-top: 8px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        #loadingText {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ===== LOADING OVERLAY ===== -->
+<div id="loading">
+    <div class="spinner"></div>
+
+    <div id="loadingText">Uploading...</div>
+
+    <div id="eta">Estimated time: <span id="timeLeft">3</span>s</div>
+
+    <div id="progressContainer">
+        <div id="progressBar"></div>
+    </div>
+
+    <div id="percent">0%</div>
+</div>
+
+<div class="container">
+
+    <h1>PhotoMorph</h1>
+    <p class="subtitle">Upload a photo and choose a theme.</p>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class="error">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- ===== FORM (NO ACTION - AJAX HANDLED) ===== -->
+    <form id="uploadForm" class="card" enctype="multipart/form-data">
+
+        <label class="label">Choose your image</label>
+
+        <input type="file" name="image" accept="image/*" required onchange="previewImage(event)">
+        <img id="preview" />
+
+        <label class="label">Choose theme</label>
+        <select name="theme">
+            <option value="black white">Black & White</option>
+            <option value="sepia">Sepia</option>
+            <option value="sketch">Pencil Sketch</option>
+            <option value="pixel">Pixel/Minecraft</option>
+            <option value="cartoon">Cartoon</option>
+        </select>
+
+        <button type="submit">Upload Image</button>
+    </form>
+
+    {% if uploaded_image %}
+       <div class="result-card">
+           <h2>Processed Image</h2>
+           <img src="{{ uploaded_image }}" class="preview-image">
+           <p class="note">Processing complete</p>
+       </div>
+    {% endif %}
+
+</div>
+
+<script>
+function previewImage(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById("preview");
+
+    if (file) {
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = "block";
+        }
+
+        reader.readAsDataURL(file);
+    }
+}
+
+// ===== CANVA UPLOAD SYSTEM =====
+const form = document.getElementById("uploadForm");
+const loading = document.getElementById("loading");
+const progressBar = document.getElementById("progressBar");
+const percent = document.getElementById("percent");
+const timeLeft = document.getElementById("timeLeft");
+const loadingText = document.getElementById("loadingText");
+
+form.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const fileInput = document.querySelector('input[name="image"]');
+    const themeInput = document.querySelector('select[name="theme"]');
+
+    const formData = new FormData();
+    formData.append("image", fileInput.files[0]);
+    formData.append("theme", themeInput.value);
+
+    loading.style.display = "flex";
+
+    let fakeTime = Math.floor(Math.random() * 4) + 2;
+    timeLeft.textContent = fakeTime;
+
+    const xhr = new XMLHttpRequest();
+
+    // REAL UPLOAD PROGRESS
+    xhr.upload.onprogress = function(event) {
+        if (event.lengthComputable) {
+            let percentComplete = Math.round((event.loaded / event.total) * 100);
+
+            progressBar.style.width = percentComplete + "%";
+            percent.textContent = percentComplete + "%";
+
+            if (percentComplete < 30) {
+                loadingText.textContent = "Uploading image...";
+            } else if (percentComplete < 80) {
+                loadingText.textContent = "Processing...";
+            } else {
+                loadingText.textContent = "Finalizing...";
+            }
+        }
+    };
+
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            window.location.reload();
+        }
+    };
+
+    xhr.open("POST", "/upload", true);
+    xhr.send(formData);
+});
+</script>
+
+</body>
+</html>

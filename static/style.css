@@ -1,0 +1,93 @@
+*{
+box-sizing:border-box
+
+}
+
+body {
+  margin:0;
+  font-family: Arial, sans-serif
+  background: #f4g6f8
+  color: #222
+}
+
+.container {
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  h1 {
+   text-align: center;
+   font-size: 36px;
+   margin-bottom: 5px;
+ }
+ .subtitle {
+ text-align: center;
+ color: #555;
+ margin-bottom: 25px;
+ }
+
+ .card,
+ .result-card {
+   background: white;
+   padding: 20px;
+   border-radius: 14px;
+   box-shadow: 0 4px 15px rgba(0,0,0,0.08)
+   margin-bottom: 20px;
+  }
+
+ .label {
+ display: block;
+ margin-top: 15px;
+ margin-bottom: 8px;
+ font-weight: bold;
+
+ }
+
+ input,
+ select,
+ button {
+ width: 100%;
+   padding: 14px;
+   font-size: 16px;
+   border-radius: 10px;
+   border: 1px solid #ccc;
+
+ }
+
+ button {
+   margin-top: 20px;
+   background: #222;
+   color: white;
+   border: none;
+   cursor: pointer;
+   font-weight: bold;
+}
+button:hover {
+   background: #444;
+}
+
+.preview-image {
+   width: 100%;
+   border-radius: 12px;
+   margin-top: 10px;
+}
+
+.error {
+   background: #ffe0e0;
+   color: #900;
+   padding: 10px;
+   border-radius: 10px;
+   margin-bottom: 15px;
+}
+.note {
+   color: #555;
+   font-size: 14px;
+   text-align: center;
+}
+
+
+
+
+
+
